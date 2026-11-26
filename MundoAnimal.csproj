@@ -1,0 +1,70 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <RootNamespace>MundoAnimal</RootNamespace>
+  </PropertyGroup>
+
+  <!-- Hace que cada formulario aparezca en el Explorador de soluciones y se abra en el diseñador -->
+  <ItemGroup>
+    <Compile Update="Forms\frmLogin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\frmLogin.Designer.cs">
+      <DependentUpon>frmLogin.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Forms\frmPrincipal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\frmPrincipal.Designer.cs">
+      <DependentUpon>frmPrincipal.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Forms\frmInicio.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\frmInicio.Designer.cs">
+      <DependentUpon>frmInicio.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Forms\frmDuenos.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\frmDuenos.Designer.cs">
+      <DependentUpon>frmDuenos.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Forms\frmMascotas.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\frmMascotas.Designer.cs">
+      <DependentUpon>frmMascotas.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Forms\frmConsultas.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\frmConsultas.Designer.cs">
+      <DependentUpon>frmConsultas.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Forms\frmVacunas.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\frmVacunas.Designer.cs">
+      <DependentUpon>frmVacunas.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Forms\frmReportes.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\frmReportes.Designer.cs">
+      <DependentUpon>frmReportes.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Forms\frmUsuarios.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\frmUsuarios.Designer.cs">
+      <DependentUpon>frmUsuarios.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+</Project>
