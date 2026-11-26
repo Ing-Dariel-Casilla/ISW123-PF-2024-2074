@@ -1,159 +1,348 @@
-﻿using MundoAnimal.Models;
+﻿
+using Microsoft.Data.SqlClient;
+using MundoAnimal.ConexionSQL;
+using MundoAnimal.Models;
+using System;
+using System.Collections.Generic;
 
 namespace MundoAnimal.Data
 {
-    // Catálogo de tipos de vacuna y registro de las vacunas aplicadas
     public static class RepositorioVacunas
     {
-        private static List<Vacuna> catalogo = CrearCatalogo();
-        private static List<RegistroVacuna> registros = new List<RegistroVacuna>();
-        private static int proximoId = 1;
-
-        private static List<Vacuna> CrearCatalogo()
-        {
-            string[] nombres = { "Antirrábica", "Séxtuple", "Parvovirus", "Triple Felina", "Leucemia Felina" };
-            List<Vacuna> lista = new List<Vacuna>();
-            for (int i = 0; i < nombres.Length; i++)
-            {
-                Vacuna v = new Vacuna();
-                v.Id = i + 1;
-                v.Nombre = nombres[i];
-                lista.Add(v);
-            }
-            return lista;
-        }
-
         public static List<Vacuna> Catalogo()
         {
-            return catalogo;
-        }
+            List<Vacuna> lista = new List<Vacuna>();
 
-        public static string NombreVacuna(int vacunaId)
-        {
-            foreach (Vacuna v in catalogo)
+            using (SqlConnection conexion = ConexionBD.ObtenerConexion())
             {
-                if (v.Id == vacunaId)
+                conexion.Open();
+
+                string sql = @"
+                    SELECT Id, Nombre
+                    FROM dbo.CatalogoVacunas
+                    ORDER BY Nombre;";
+
+                using (SqlCommand comando = new SqlCommand(sql, conexion))
+                using (SqlDataReader lector = comando.ExecuteReader())
                 {
-                    return v.Nombre;
+                    while (lector.Read())
+                    {
+                        lista.Add(new Vacuna
+                        {
+                            Id = lector.GetInt32(lector.GetOrdinal("Id")),
+                            Nombre = lector.GetString(lector.GetOrdinal("Nombre"))
+                        });
+                    }
                 }
             }
-            return "";
+
+            return lista;
+        }
+    public static void AgregarAlCatalogo(string nombre, string descripcion)
+        {
+            if (string.IsNullOrWhiteSpace(nombre))
+                throw new ArgumentException("Escribe el nombre de la vacuna.");
+
+            using (SqlConnection conexion = ConexionBD.ObtenerConexion())
+            {
+                conexion.Open();
+
+                string sql = @"
+            INSERT INTO dbo.CatalogoVacunas (Nombre, Descripcion)
+            VALUES (@Nombre, @Descripcion);";
+
+                using (SqlCommand comando = new SqlCommand(sql, conexion))
+                {
+                    comando.Parameters.AddWithValue("@Nombre", nombre.Trim());
+                    comando.Parameters.AddWithValue(
+                        "@Descripcion",
+                        string.IsNullOrWhiteSpace(descripcion)
+                            ? (object)DBNull.Value
+                            : descripcion.Trim());
+
+                    comando.ExecuteNonQuery();
+                }
+            }
+        }
+        public static string NombreVacuna(int vacunaId)
+        {
+            using (SqlConnection conexion = ConexionBD.ObtenerConexion())
+            {
+                conexion.Open();
+
+                string sql = @"
+                    SELECT Nombre
+                    FROM dbo.CatalogoVacunas
+                    WHERE Id = @Id;";
+
+                using (SqlCommand comando = new SqlCommand(sql, conexion))
+                {
+                    comando.Parameters.AddWithValue("@Id", vacunaId);
+                    object resultado = comando.ExecuteScalar();
+
+                    return resultado == null || resultado == DBNull.Value
+                        ? ""
+                        : Convert.ToString(resultado);
+                }
+            }
         }
 
         public static List<RegistroVacuna> Todos()
         {
-            return registros;
+            List<RegistroVacuna> lista = new List<RegistroVacuna>();
+
+            using (SqlConnection conexion = ConexionBD.ObtenerConexion())
+            {
+                conexion.Open();
+
+                string sql = @"
+                    SELECT Id, MascotaId, VacunaId, Lote,
+                           FechaAplicacion, ProximaDosis, Observacion
+                    FROM dbo.Vacunas
+                    ORDER BY FechaAplicacion DESC, Id DESC;";
+
+                using (SqlCommand comando = new SqlCommand(sql, conexion))
+                using (SqlDataReader lector = comando.ExecuteReader())
+                {
+                    while (lector.Read())
+                    {
+                        lista.Add(LeerRegistro(lector));
+                    }
+                }
+            }
+
+            return lista;
         }
 
         public static List<RegistroVacuna> Listar(string filtro)
         {
             List<RegistroVacuna> resultado = new List<RegistroVacuna>();
-            foreach (RegistroVacuna r in registros)
+
+            foreach (RegistroVacuna registro in Todos())
             {
-                string mascota = "";
-                Mascota m = RepositorioMascotas.Buscar(r.MascotaId);
-                if (m != null)
+                Mascota mascota =
+                    RepositorioMascotas.Buscar(registro.MascotaId);
+
+                string nombreMascota =
+                    mascota == null ? "" : mascota.Nombre;
+
+                if (Buscador.Coincide(nombreMascota, filtro) ||
+                    Buscador.Coincide(
+                        NombreVacuna(registro.VacunaId), filtro))
                 {
-                    mascota = m.Nombre;
-                }
-                if (Buscador.Coincide(mascota, filtro) || Buscador.Coincide(NombreVacuna(r.VacunaId), filtro))
-                {
-                    resultado.Add(r);
+                    resultado.Add(registro);
                 }
             }
+
             return resultado;
         }
 
         public static RegistroVacuna Buscar(int id)
         {
-            foreach (RegistroVacuna r in registros)
+            using (SqlConnection conexion = ConexionBD.ObtenerConexion())
             {
-                if (r.Id == id)
+                conexion.Open();
+
+                string sql = @"
+                    SELECT Id, MascotaId, VacunaId, Lote,
+                           FechaAplicacion, ProximaDosis, Observacion
+                    FROM dbo.Vacunas
+                    WHERE Id = @Id;";
+
+                using (SqlCommand comando = new SqlCommand(sql, conexion))
                 {
-                    return r;
+                    comando.Parameters.AddWithValue("@Id", id);
+
+                    using (SqlDataReader lector = comando.ExecuteReader())
+                    {
+                        if (lector.Read())
+                            return LeerRegistro(lector);
+                    }
                 }
             }
+
             return null;
         }
 
         public static bool MascotaTieneVacunas(int mascotaId)
         {
-            foreach (RegistroVacuna r in registros)
+            using (SqlConnection conexion = ConexionBD.ObtenerConexion())
             {
-                if (r.MascotaId == mascotaId)
+                conexion.Open();
+
+                string sql = @"
+                    SELECT COUNT(1)
+                    FROM dbo.Vacunas
+                    WHERE MascotaId = @MascotaId;";
+
+                using (SqlCommand comando = new SqlCommand(sql, conexion))
                 {
-                    return true;
+                    comando.Parameters.AddWithValue("@MascotaId", mascotaId);
+
+                    return Convert.ToInt32(comando.ExecuteScalar()) > 0;
                 }
             }
-            return false;
         }
 
-        // Vacunas cuya próxima dosis cae entre hoy y dentro de "dias" días.
-        // Si esa vacuna ya se volvió a aplicar después a la mascota, la dosis ya no está pendiente.
         public static List<RegistroVacuna> ProximasDosis(int dias)
         {
             List<RegistroVacuna> resultado = new List<RegistroVacuna>();
+
             DateTime hoy = DateTime.Today;
             DateTime limite = hoy.AddDays(dias);
 
-            foreach (RegistroVacuna r in registros)
+            foreach (RegistroVacuna registro in Todos())
             {
-                if (!r.TieneProximaDosis)
-                {
+                if (!registro.TieneProximaDosis)
                     continue;
-                }
-                if (r.ProximaDosis.Date < hoy || r.ProximaDosis.Date > limite)
-                {
-                    continue;
-                }
 
-                bool yaSeAplicoOtraVez = false;
-                foreach (RegistroVacuna otra in registros)
+                if (registro.ProximaDosis.Date < hoy ||
+                    registro.ProximaDosis.Date > limite)
+                    continue;
+
+                bool aplicadaNuevamente = false;
+
+                foreach (RegistroVacuna otra in Todos())
                 {
-                    if (otra.MascotaId == r.MascotaId && otra.VacunaId == r.VacunaId && otra.FechaAplicacion > r.FechaAplicacion)
+                    if (otra.MascotaId == registro.MascotaId &&
+                        otra.VacunaId == registro.VacunaId &&
+                        otra.FechaAplicacion > registro.FechaAplicacion)
                     {
-                        yaSeAplicoOtraVez = true;
+                        aplicadaNuevamente = true;
+                        break;
                     }
                 }
-                if (!yaSeAplicoOtraVez)
-                {
-                    resultado.Add(r);
-                }
+
+                if (!aplicadaNuevamente)
+                    resultado.Add(registro);
             }
+
             return resultado;
         }
 
-        public static void Agregar(RegistroVacuna r)
+        public static void Agregar(RegistroVacuna registro)
         {
-            r.Id = proximoId;
-            proximoId++;
-            registros.Add(r);
+            using (SqlConnection conexion = ConexionBD.ObtenerConexion())
+            {
+                conexion.Open();
+
+                string sql = @"
+                    INSERT INTO dbo.Vacunas
+                        (MascotaId, VacunaId, Lote,
+                         FechaAplicacion, ProximaDosis, Observacion)
+                    VALUES
+                        (@MascotaId, @VacunaId, @Lote,
+                         @FechaAplicacion, @ProximaDosis, @Observacion);
+
+                    SELECT CAST(SCOPE_IDENTITY() AS int);";
+
+                using (SqlCommand comando = new SqlCommand(sql, conexion))
+                {
+                    AgregarParametros(comando, registro);
+
+                    registro.Id = Convert.ToInt32(
+                        comando.ExecuteScalar());
+                }
+            }
         }
 
         public static bool Actualizar(RegistroVacuna nuevo)
         {
-            RegistroVacuna actual = Buscar(nuevo.Id);
-            if (actual == null)
+            using (SqlConnection conexion = ConexionBD.ObtenerConexion())
             {
-                return false;
+                conexion.Open();
+
+                string sql = @"
+                    UPDATE dbo.Vacunas
+                    SET MascotaId = @MascotaId,
+                        VacunaId = @VacunaId,
+                        Lote = @Lote,
+                        FechaAplicacion = @FechaAplicacion,
+                        ProximaDosis = @ProximaDosis,
+                        Observacion = @Observacion
+                    WHERE Id = @Id;";
+
+                using (SqlCommand comando = new SqlCommand(sql, conexion))
+                {
+                    AgregarParametros(comando, nuevo);
+                    comando.Parameters.AddWithValue("@Id", nuevo.Id);
+
+                    return comando.ExecuteNonQuery() > 0;
+                }
             }
-            actual.MascotaId = nuevo.MascotaId;
-            actual.VacunaId = nuevo.VacunaId;
-            actual.Lote = nuevo.Lote;
-            actual.FechaAplicacion = nuevo.FechaAplicacion;
-            actual.TieneProximaDosis = nuevo.TieneProximaDosis;
-            actual.ProximaDosis = nuevo.ProximaDosis;
-            actual.Observacion = nuevo.Observacion;
-            return true;
         }
 
         public static void Eliminar(int id)
         {
-            RegistroVacuna r = Buscar(id);
-            if (r != null)
+            using (SqlConnection conexion = ConexionBD.ObtenerConexion())
             {
-                registros.Remove(r);
+                conexion.Open();
+
+                string sql = "DELETE FROM dbo.Vacunas WHERE Id = @Id;";
+
+                using (SqlCommand comando = new SqlCommand(sql, conexion))
+                {
+                    comando.Parameters.AddWithValue("@Id", id);
+                    comando.ExecuteNonQuery();
+                }
             }
+        }
+
+        private static RegistroVacuna LeerRegistro(SqlDataReader lector)
+        {
+            int indiceProxima = lector.GetOrdinal("ProximaDosis");
+            int indiceLote = lector.GetOrdinal("Lote");
+            int indiceObservacion = lector.GetOrdinal("Observacion");
+
+            return new RegistroVacuna
+            {
+                Id = lector.GetInt32(lector.GetOrdinal("Id")),
+                MascotaId = lector.GetInt32(lector.GetOrdinal("MascotaId")),
+                VacunaId = lector.GetInt32(lector.GetOrdinal("VacunaId")),
+                Lote = lector.IsDBNull(indiceLote)
+                    ? ""
+                    : lector.GetString(indiceLote),
+                FechaAplicacion = lector.GetDateTime(
+                    lector.GetOrdinal("FechaAplicacion")),
+                TieneProximaDosis = !lector.IsDBNull(indiceProxima),
+                ProximaDosis = lector.IsDBNull(indiceProxima)
+                    ? DateTime.MinValue
+                    : lector.GetDateTime(indiceProxima),
+                Observacion = lector.IsDBNull(indiceObservacion)
+                    ? ""
+                    : lector.GetString(indiceObservacion)
+            };
+        }
+
+        private static void AgregarParametros(
+            SqlCommand comando, RegistroVacuna registro)
+        {
+            comando.Parameters.AddWithValue(
+                "@MascotaId", registro.MascotaId);
+
+            comando.Parameters.AddWithValue(
+                "@VacunaId", registro.VacunaId);
+
+            comando.Parameters.AddWithValue(
+                "@Lote",
+                string.IsNullOrWhiteSpace(registro.Lote)
+                    ? (object)DBNull.Value
+                    : registro.Lote);
+
+            comando.Parameters.AddWithValue(
+                "@FechaAplicacion", registro.FechaAplicacion.Date);
+
+            comando.Parameters.AddWithValue(
+                "@ProximaDosis",
+                registro.TieneProximaDosis
+                    ? (object)registro.ProximaDosis.Date
+                    : DBNull.Value);
+
+            comando.Parameters.AddWithValue(
+                "@Observacion",
+                string.IsNullOrWhiteSpace(registro.Observacion)
+                    ? (object)DBNull.Value
+                    : registro.Observacion);
         }
     }
 }

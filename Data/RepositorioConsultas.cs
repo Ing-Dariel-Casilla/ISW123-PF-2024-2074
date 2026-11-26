@@ -1,116 +1,251 @@
-﻿using MundoAnimal.Models;
+﻿
+using Microsoft.Data.SqlClient;
+using MundoAnimal.ConexionSQL;
+using MundoAnimal.Models;
+using System;
+using System.Collections.Generic;
 
 namespace MundoAnimal.Data
 {
     public static class RepositorioConsultas
     {
-        private static List<Consulta> consultas = new List<Consulta>();
-        private static int proximoId = 1;
-
         public static List<Consulta> Todas()
         {
-            return consultas;
+            List<Consulta> lista = new List<Consulta>();
+
+            using (SqlConnection conexion = ConexionBD.ObtenerConexion())
+            {
+                conexion.Open();
+
+                string sql = @"
+                    SELECT Id, MascotaId, Fecha, Motivo,
+                           Diagnostico, VeterinarioId, Tratamiento
+                    FROM dbo.Consultas
+                    ORDER BY Fecha DESC, Id DESC;";
+
+                using (SqlCommand comando = new SqlCommand(sql, conexion))
+                using (SqlDataReader lector = comando.ExecuteReader())
+                {
+                    while (lector.Read())
+                    {
+                        lista.Add(LeerConsulta(lector));
+                    }
+                }
+            }
+
+            return lista;
         }
 
         public static string NombreMascota(int mascotaId)
         {
-            Mascota m = RepositorioMascotas.Buscar(mascotaId);
-            if (m == null)
-            {
-                return "";
-            }
-            return m.Nombre;
+            return RepositorioMascotas.NombreDueno(-1) == null
+                ? ""
+                : ObtenerNombreMascota(mascotaId);
+        }
+
+        private static string ObtenerNombreMascota(int mascotaId)
+        {
+            Mascota mascota = RepositorioMascotas.Buscar(mascotaId);
+            return mascota == null ? "" : mascota.Nombre;
         }
 
         public static string NombreVeterinario(int usuarioId)
         {
-            Usuario u = RepositorioUsuarios.Buscar(usuarioId);
-            if (u == null)
-            {
+            Usuario usuario = RepositorioUsuarios.Buscar(usuarioId);
+
+            if (usuario == null)
                 return "";
-            }
-            return u.Nombre + " " + u.Apellido;
+
+            return usuario.Nombre + " " + usuario.Apellido;
         }
 
         public static List<Consulta> Listar(string filtro)
         {
             List<Consulta> resultado = new List<Consulta>();
-            foreach (Consulta c in consultas)
+
+            foreach (Consulta consulta in Todas())
             {
-                if (Buscador.Coincide(NombreMascota(c.MascotaId), filtro) || Buscador.Coincide(c.Motivo, filtro) || Buscador.Coincide(NombreVeterinario(c.VeterinarioId), filtro))
+                if (Buscador.Coincide(NombreMascota(consulta.MascotaId), filtro) ||
+                    Buscador.Coincide(consulta.Motivo, filtro) ||
+                    Buscador.Coincide(NombreVeterinario(consulta.VeterinarioId), filtro))
                 {
-                    resultado.Add(c);
+                    resultado.Add(consulta);
                 }
             }
+
             return resultado;
         }
 
         public static Consulta Buscar(int id)
         {
-            foreach (Consulta c in consultas)
+            using (SqlConnection conexion = ConexionBD.ObtenerConexion())
             {
-                if (c.Id == id)
+                conexion.Open();
+
+                string sql = @"
+                    SELECT Id, MascotaId, Fecha, Motivo,
+                           Diagnostico, VeterinarioId, Tratamiento
+                    FROM dbo.Consultas
+                    WHERE Id = @Id;";
+
+                using (SqlCommand comando = new SqlCommand(sql, conexion))
                 {
-                    return c;
+                    comando.Parameters.AddWithValue("@Id", id);
+
+                    using (SqlDataReader lector = comando.ExecuteReader())
+                    {
+                        if (lector.Read())
+                            return LeerConsulta(lector);
+                    }
                 }
             }
+
             return null;
         }
 
         public static bool MascotaTieneConsultas(int mascotaId)
         {
-            foreach (Consulta c in consultas)
+            using (SqlConnection conexion = ConexionBD.ObtenerConexion())
             {
-                if (c.MascotaId == mascotaId)
+                conexion.Open();
+
+                string sql = @"
+                    SELECT COUNT(1)
+                    FROM dbo.Consultas
+                    WHERE MascotaId = @MascotaId;";
+
+                using (SqlCommand comando = new SqlCommand(sql, conexion))
                 {
-                    return true;
+                    comando.Parameters.AddWithValue("@MascotaId", mascotaId);
+                    return Convert.ToInt32(comando.ExecuteScalar()) > 0;
                 }
             }
-            return false;
         }
 
         public static bool VeterinarioTieneConsultas(int usuarioId)
         {
-            foreach (Consulta c in consultas)
+            using (SqlConnection conexion = ConexionBD.ObtenerConexion())
             {
-                if (c.VeterinarioId == usuarioId)
+                conexion.Open();
+
+                string sql = @"
+                    SELECT COUNT(1)
+                    FROM dbo.Consultas
+                    WHERE VeterinarioId = @VeterinarioId;";
+
+                using (SqlCommand comando = new SqlCommand(sql, conexion))
                 {
-                    return true;
+                    comando.Parameters.AddWithValue("@VeterinarioId", usuarioId);
+                    return Convert.ToInt32(comando.ExecuteScalar()) > 0;
                 }
             }
-            return false;
         }
 
-        public static void Agregar(Consulta c)
+        public static void Agregar(Consulta consulta)
         {
-            c.Id = proximoId;
-            proximoId++;
-            consultas.Add(c);
+            using (SqlConnection conexion = ConexionBD.ObtenerConexion())
+            {
+                conexion.Open();
+
+                string sql = @"
+                    INSERT INTO dbo.Consultas
+                        (MascotaId, Fecha, Motivo, Diagnostico,
+                         VeterinarioId, Tratamiento)
+                    VALUES
+                        (@MascotaId, @Fecha, @Motivo, @Diagnostico,
+                         @VeterinarioId, @Tratamiento);
+
+                    SELECT CAST(SCOPE_IDENTITY() AS int);";
+
+                using (SqlCommand comando = new SqlCommand(sql, conexion))
+                {
+                    AgregarParametros(comando, consulta);
+                    consulta.Id = Convert.ToInt32(comando.ExecuteScalar());
+                }
+            }
         }
 
         public static bool Actualizar(Consulta nueva)
         {
-            Consulta actual = Buscar(nueva.Id);
-            if (actual == null)
+            using (SqlConnection conexion = ConexionBD.ObtenerConexion())
             {
-                return false;
+                conexion.Open();
+
+                string sql = @"
+                    UPDATE dbo.Consultas
+                    SET MascotaId = @MascotaId,
+                        Fecha = @Fecha,
+                        Motivo = @Motivo,
+                        Diagnostico = @Diagnostico,
+                        VeterinarioId = @VeterinarioId,
+                        Tratamiento = @Tratamiento
+                    WHERE Id = @Id;";
+
+                using (SqlCommand comando = new SqlCommand(sql, conexion))
+                {
+                    AgregarParametros(comando, nueva);
+                    comando.Parameters.AddWithValue("@Id", nueva.Id);
+
+                    return comando.ExecuteNonQuery() > 0;
+                }
             }
-            actual.MascotaId = nueva.MascotaId;
-            actual.Fecha = nueva.Fecha;
-            actual.Motivo = nueva.Motivo;
-            actual.Diagnostico = nueva.Diagnostico;
-            actual.VeterinarioId = nueva.VeterinarioId;
-            actual.Tratamiento = nueva.Tratamiento;
-            return true;
         }
 
         public static void Eliminar(int id)
         {
-            Consulta c = Buscar(id);
-            if (c != null)
+            using (SqlConnection conexion = ConexionBD.ObtenerConexion())
             {
-                consultas.Remove(c);
+                conexion.Open();
+
+                string sql = "DELETE FROM dbo.Consultas WHERE Id = @Id;";
+
+                using (SqlCommand comando = new SqlCommand(sql, conexion))
+                {
+                    comando.Parameters.AddWithValue("@Id", id);
+                    comando.ExecuteNonQuery();
+                }
             }
+        }
+
+        private static Consulta LeerConsulta(SqlDataReader lector)
+        {
+            return new Consulta
+            {
+                Id = lector.GetInt32(lector.GetOrdinal("Id")),
+                MascotaId = lector.GetInt32(lector.GetOrdinal("MascotaId")),
+                Fecha = lector.GetDateTime(lector.GetOrdinal("Fecha")),
+                Motivo = lector.GetString(lector.GetOrdinal("Motivo")),
+                Diagnostico = lector.IsDBNull(lector.GetOrdinal("Diagnostico"))
+                    ? ""
+                    : lector.GetString(lector.GetOrdinal("Diagnostico")),
+                VeterinarioId = lector.GetInt32(lector.GetOrdinal("VeterinarioId")),
+                Tratamiento = lector.IsDBNull(lector.GetOrdinal("Tratamiento"))
+                    ? ""
+                    : lector.GetString(lector.GetOrdinal("Tratamiento"))
+            };
+        }
+
+        private static void AgregarParametros(
+            SqlCommand comando, Consulta consulta)
+        {
+            comando.Parameters.AddWithValue("@MascotaId", consulta.MascotaId);
+            comando.Parameters.AddWithValue("@Fecha", consulta.Fecha.Date);
+            comando.Parameters.AddWithValue("@Motivo", consulta.Motivo);
+
+            comando.Parameters.AddWithValue(
+                "@Diagnostico",
+                string.IsNullOrWhiteSpace(consulta.Diagnostico)
+                    ? (object)DBNull.Value
+                    : consulta.Diagnostico);
+
+            comando.Parameters.AddWithValue(
+                "@VeterinarioId", consulta.VeterinarioId);
+
+            comando.Parameters.AddWithValue(
+                "@Tratamiento",
+                string.IsNullOrWhiteSpace(consulta.Tratamiento)
+                    ? (object)DBNull.Value
+                    : consulta.Tratamiento);
         }
     }
 }

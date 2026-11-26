@@ -9,6 +9,10 @@
     <RootNamespace>MundoAnimal</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.2" />
+  </ItemGroup>
+
   <!-- Hace que cada formulario aparezca en el Explorador de soluciones y se abra en el diseñador -->
   <ItemGroup>
     <Compile Update="Forms\frmLogin.cs">

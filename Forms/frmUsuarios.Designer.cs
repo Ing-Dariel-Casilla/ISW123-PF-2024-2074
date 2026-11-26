@@ -274,8 +274,9 @@
             this.cmbEstado.FormattingEnabled = true;
             this.cmbEstado.Location = new System.Drawing.Point(640, 142);
             this.cmbEstado.Size = new System.Drawing.Size(340, 29);
-            this.cmbEstado.SelectedIndex = 0;
             this.cmbEstado.Items.AddRange(new object[] { "Activo", "Inactivo" });
+            this.cmbEstado.SelectedIndex = 0;
+
             this.cmbEstado.TabIndex = 13;
             // 
             // btnNuevo

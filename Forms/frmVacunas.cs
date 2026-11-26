@@ -237,5 +237,52 @@ namespace MundoAnimal.Forms
             LimpiarCampos();
             Mensajes.Info("Registro de vacuna eliminado.");
         }
+
+        private void pnlDatosInterior_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void btnAgregarVacuna_Click(object sender, EventArgs e)
+        { 
+           
+            string nombre = Microsoft.VisualBasic.Interaction.InputBox(
+                "Escribe el nombre de la vacuna:",
+                "Agregar vacuna");
+
+            if (string.IsNullOrWhiteSpace(nombre))
+                return;
+
+            string descripcion = Microsoft.VisualBasic.Interaction.InputBox(
+                "Escribe la descripción de la vacuna:",
+                "Agregar vacuna");
+
+            try
+            {
+                RepositorioVacunas.AgregarAlCatalogo(nombre, descripcion);
+
+                cmbVacuna.Items.Clear();
+
+                foreach (Vacuna v in RepositorioVacunas.Catalogo())
+                {
+                    cmbVacuna.Items.Add(v);
+                }
+
+                MessageBox.Show(
+                    "Vacuna agregada correctamente.",
+                    "MundoAnimal",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "No se pudo agregar la vacuna: " + ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
     }
+    
 }

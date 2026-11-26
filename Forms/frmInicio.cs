@@ -117,5 +117,15 @@ namespace MundoAnimal.Forms
             }
             dgvProximasVacunas.ClearSelection();
         }
+
+        private void flpMenu_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void dgvConsultasRecientes_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
     }
 }
