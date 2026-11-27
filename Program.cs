@@ -11,8 +11,20 @@ namespace MundoAnimal
         {
             ApplicationConfiguration.Initialize();
 
+            // Prueba de flujo de datos
+          // System.Diagnostics.Debug.WriteLine(
+    //PruebaFlujo.ClasificarEspecie("Perro"));
 
-             // Prueba de eventos veterinarios
+           // System.Diagnostics.Debug.WriteLine(
+               // "Especies: " +
+//string.Join(", ", PruebaFlujo.ObtenerEspeciesRegistradas()));
+
+         //   PruebaFlujo.ContarEspecies();
+
+
+
+
+            // Prueba de eventos veterinarios
             //PruebaEventoVeterinario.Ejecutar();
 
             // Prueba de reflexión

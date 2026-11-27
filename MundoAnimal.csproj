@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Estructura\EntidadVeterinariaAttribute.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.2" />
   </ItemGroup>
 
@@ -72,6 +76,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Requisitos\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Estructura\EntidadVeterinariaAttribute.cs" />
   </ItemGroup>
 
 </Project>
