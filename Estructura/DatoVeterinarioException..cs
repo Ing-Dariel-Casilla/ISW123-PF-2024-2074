@@ -1,13 +1,15 @@
-﻿
-using System;
+﻿using System;
 
 namespace MundoAnimal.Models
 {
-    public class DatoVeterinarioException : Exception
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+    public class EntidadVeterinariaAttribute : Attribute
     {
-        public DatoVeterinarioException(string mensaje)
-            : base(mensaje)
+        public string Descripcion { get; }
+
+        public EntidadVeterinariaAttribute(string descripcion)
         {
+            Descripcion = descripcion;
         }
     }
 }
