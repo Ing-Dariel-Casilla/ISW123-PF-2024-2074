@@ -1,15 +1,23 @@
 ﻿
+
 using System;
+using System.Windows.Forms;
 using MundoAnimal.Models;
 
 namespace MundoAnimal
 {
     public static class PruebaReflexion
     {
-        public static string Ejecutar()
+        public static void Ejecutar()
         {
-            return LectorAtributos
-                .ObtenerDescripcion<ResumenConsulta>();
+            string resultado =
+                LectorAtributos.ObtenerDescripcion<ResumenConsulta>();
+
+            MessageBox.Show(
+                resultado,
+                "Prueba de reflexión",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
     }
 }

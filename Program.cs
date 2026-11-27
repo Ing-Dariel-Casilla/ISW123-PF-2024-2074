@@ -10,8 +10,10 @@ namespace MundoAnimal
         static void Main()
         {
             ApplicationConfiguration.Initialize();
+            // Prueba de reflexión
+           // PruebaReflexion.Ejecutar();
 
-            // Crea el usuario inicial (admin) porque no hay base de datos
+            // el usuario inicial (admin) 
             RepositorioUsuarios.CrearUsuarioInicial();
 
             // Login -> ventana principal. Si el usuario cierra sesión, vuelve al login.
