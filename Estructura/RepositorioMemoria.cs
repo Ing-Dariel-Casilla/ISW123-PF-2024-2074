@@ -1,9 +1,8 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MundoAnimal.Models
+namespace MundoAnimal.Estructura
 {
     public class RepositorioMemoria<T> : IEnumerable<T>
     {

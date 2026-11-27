@@ -1,5 +1,4 @@
-﻿
-namespace MundoAnimal.Models
+﻿namespace MundoAnimal.Estructura
 {
     public interface IEntidadVeterinaria
     {

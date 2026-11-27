@@ -10,8 +10,13 @@ namespace MundoAnimal
         static void Main()
         {
             ApplicationConfiguration.Initialize();
+
+
+             // Prueba de eventos veterinarios
+            //PruebaEventoVeterinario.Ejecutar();
+
             // Prueba de reflexión
-           // PruebaReflexion.Ejecutar();
+            // PruebaReflexion.Ejecutar();
 
             // el usuario inicial (admin) 
             RepositorioUsuarios.CrearUsuarioInicial();

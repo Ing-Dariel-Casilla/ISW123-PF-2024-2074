@@ -2,6 +2,7 @@
 
 using System;
 using System.Windows.Forms;
+using MundoAnimal.Estructura;
 using MundoAnimal.Models;
 
 namespace MundoAnimal

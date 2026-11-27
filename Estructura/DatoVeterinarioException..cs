@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MundoAnimal.Models
+namespace MundoAnimal.Estructura
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public class EntidadVeterinariaAttribute : Attribute

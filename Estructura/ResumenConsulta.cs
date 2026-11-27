@@ -1,11 +1,12 @@
-﻿using System;
+﻿using MundoAnimal.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 
-namespace MundoAnimal.Models
+namespace MundoAnimal.Estructura
 {
     [EntidadVeterinaria("Resumen de una consulta veterinaria")]
     public record ResumenConsulta(

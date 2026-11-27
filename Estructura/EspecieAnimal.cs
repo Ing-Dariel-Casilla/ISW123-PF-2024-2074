@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MundoAnimal.Models
+namespace MundoAnimal.Estructura
 {
     public enum EspecieAnimal
     {

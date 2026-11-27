@@ -70,5 +70,8 @@
       <DependentUpon>frmUsuarios.cs</DependentUpon>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Requisitos\" />
+  </ItemGroup>
 
 </Project>

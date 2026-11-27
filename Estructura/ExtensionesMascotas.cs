@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MundoAnimal.Models;
 
-namespace MundoAnimal.Models
+namespace MundoAnimal.Estructura
 {
     public static class ExtensionesMascotas
     {

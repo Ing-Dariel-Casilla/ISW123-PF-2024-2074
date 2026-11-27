@@ -1,5 +1,4 @@
-﻿
-namespace MundoAnimal.Models
+﻿namespace MundoAnimal.Estructura
 {
     public abstract class EntidadVeterinaria : IEntidadVeterinaria,
     System.IComparable<EntidadVeterinaria>

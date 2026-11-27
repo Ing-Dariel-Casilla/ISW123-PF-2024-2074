@@ -1,6 +1,4 @@
-﻿
-
-namespace MundoAnimal.Models
+﻿namespace MundoAnimal.Estructura
 {
     public class EntidadConsulta : EntidadVeterinaria
     {
