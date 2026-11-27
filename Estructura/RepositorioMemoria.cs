@@ -5,8 +5,21 @@ using System.Linq;
 
 namespace MundoAnimal.Models
 {
-    public class RepositorioMemoria<T>
+    public class RepositorioMemoria<T> : IEnumerable<T>
     {
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return elementos.GetEnumerator();
+        }
+
+        System.Collections.IEnumerator
+            System.Collections.IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+
         private readonly List<T> elementos = new List<T>();
 
         public void Agregar(T elemento)
@@ -28,5 +41,8 @@ namespace MundoAnimal.Models
         {
             return elementos.Count;
         }
+
     }
+
+
 }
