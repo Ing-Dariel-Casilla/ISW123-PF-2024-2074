@@ -127,5 +127,51 @@ namespace MundoAnimal.Forms
         {
 
         }
+
+        private void progressBar1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+       
+
+
+private async void btnEjecutarProceso_Click(object sender, EventArgs e)
+        {
+            btnEjecutarProceso.Enabled = false;
+            progressBarProceso.Value = 0;
+
+            try
+            {
+                var progreso = new Progress<int>(porcentaje =>
+                {
+                    progressBarProceso.Value = porcentaje;
+                });
+
+                ProcesoAsincrono proceso = new ProcesoAsincrono();
+
+                await proceso.EjecutarAsync(progreso);
+
+                MessageBox.Show(
+                    "Proceso completado correctamente.",
+                    "MundoAnimal",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Ocurrió un error: " + ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            finally
+            {
+                btnEjecutarProceso.Enabled = true;
+            }
+        }
+
     }
 }
+

@@ -72,6 +72,8 @@
             btnVacunas = new Button();
             btnReportes = new Button();
             btnUsuarios = new Button();
+            btnEjecutarProceso = new Button();
+            progressBarProceso = new ProgressBar();
             pnlInferior = new Panel();
             btnCerrarSesion = new Button();
             pnlMarca = new Panel();
@@ -702,6 +704,8 @@
             flpMenu.Controls.Add(btnVacunas);
             flpMenu.Controls.Add(btnReportes);
             flpMenu.Controls.Add(btnUsuarios);
+            flpMenu.Controls.Add(btnEjecutarProceso);
+            flpMenu.Controls.Add(progressBarProceso);
             flpMenu.Dock = DockStyle.Fill;
             flpMenu.FlowDirection = FlowDirection.TopDown;
             flpMenu.Location = new Point(0, 207);
@@ -845,6 +849,33 @@
             btnUsuarios.UseVisualStyleBackColor = false;
             btnUsuarios.Visible = false;
             btnUsuarios.Click += Menu_Click;
+            // 
+            // btnEjecutarProceso
+            // 
+            btnEjecutarProceso.BackColor = Color.FromArgb(10, 92, 55);
+            btnEjecutarProceso.Cursor = Cursors.Hand;
+            btnEjecutarProceso.FlatAppearance.BorderSize = 0;
+            btnEjecutarProceso.FlatStyle = FlatStyle.Flat;
+            btnEjecutarProceso.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnEjecutarProceso.ForeColor = Color.White;
+            btnEjecutarProceso.Location = new Point(17, 695);
+            btnEjecutarProceso.Margin = new Padding(0, 0, 0, 13);
+            btnEjecutarProceso.Name = "btnEjecutarProceso";
+            btnEjecutarProceso.Padding = new Padding(20, 0, 0, 0);
+            btnEjecutarProceso.Size = new Size(294, 83);
+            btnEjecutarProceso.TabIndex = 7;
+            btnEjecutarProceso.Text = "Ejecutar proceso";
+            btnEjecutarProceso.TextAlign = ContentAlignment.MiddleLeft;
+            btnEjecutarProceso.UseVisualStyleBackColor = false;
+            btnEjecutarProceso.Click += btnEjecutarProceso_Click;
+            // 
+            // progressBarProceso
+            // 
+            progressBarProceso.Location = new Point(20, 794);
+            progressBarProceso.Name = "progressBarProceso";
+            progressBarProceso.Size = new Size(291, 84);
+            progressBarProceso.TabIndex = 8;
+            progressBarProceso.Click += progressBar1_Click;
             // 
             // pnlInferior
             // 
@@ -1027,5 +1058,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn colProximasVacunasFecha;
         private System.Windows.Forms.DataGridViewTextBoxColumn colProximasVacunasMascota;
         private System.Windows.Forms.DataGridViewTextBoxColumn colProximasVacunasVacuna;
+        private Button btnEjecutarProceso;
+        private ProgressBar progressBarProceso;
     }
 }
